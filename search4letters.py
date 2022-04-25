@@ -30,15 +30,12 @@ def log_request(req: 'flask_request', res: str) ->None:
                 'password' : 'vsearchpasswd',
                 'database' : 'vsearchlogDB',
     }
-    conn = mysql.connector.connect(**dbconfig)
-    cursor = conn.cursor()
-    _SQL = """INSERT INTO log (phrase, letters, ip, browser_string, results) VALUES (%s, %s, %s, %s ,%s)"""
-    cursor.execute(_SQL, (req.form['phrase'], req.form['letters'], req.remote_addr, req.user_agent.browser, res,))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    
 
+    with UseDatabase(dbconfig) as cursor:
+    	_SQL = """INSERT INTO log (phrase, letters, ip, browser_string, results) VALUES (%s, %s, %s, %s ,%s)"""
+    	cursor.execute(_SQL, (req.form['phrase'], req.form['letters'], req.remote_addr, req.user_agent.browser, res,))
+
+    
 @app.route('/viewlog')
 def View_the_log() ->'html':
     
