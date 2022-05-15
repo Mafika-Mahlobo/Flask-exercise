@@ -1,8 +1,22 @@
-from flask import Flask, render_template, request, escape
+from flask import Flask, render_template, request, escape, session
 import vsearch
 from DBcm import UseDatabase
+from checker import check_logged_in
 
 app = Flask(__name__)
+
+app.secret_key = 'ThisIsSearchForLettersKey'
+
+@app.route('/login')
+def login()->str:
+	session['logged_in'] = True
+	return 'You are now logged in'
+
+@app.route('/logout')
+def logout()->str:
+	session.pop('logged_in')
+	return 'You are now logged out'
+
 
 app.config['dbconfig'] = {'host' : '127.0.0.1', 'user' : 'vsearch', 'password' : 'vsearchpasswd', 'database' : 'vsearchlogDB',}
 
@@ -32,6 +46,7 @@ def log_request(req: 'flask_request', res: str) ->None:
 
     
 @app.route('/viewlog')
+@check_logged_in
 def View_the_log() ->'html':
     
     with UseDatabase(app.config['dbconfig']) as cursor:
